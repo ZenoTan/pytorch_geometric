@@ -21,7 +21,10 @@ def index_select(value: Tensor, index: Tensor, dim: int = 0) -> Tensor:
         numel = math.prod(size)
         storage = value.storage()._new_shared(numel)
         out = value.new(storage).view(size)
-    return torch.index_select(value, dim, index, out=out)
+    if isinstance(value, torch.Tensor):
+        return torch.index_select(value, dim, index, out=out)
+    else:
+        return value[index]
 
 
 def edge_type_to_str(edge_type: Union[EdgeType, str]) -> str:
@@ -99,7 +102,7 @@ def filter_node_store_(store: NodeStorage, out_store: NodeStorage,
             out_store.num_nodes = index.numel()
 
         elif store.is_node_attr(key):
-            index = index.to(value.device)
+            index = index.to(value.device) if isinstance(value, torch.Tensor) else index
             dim = store._parent().__cat_dim__(key, value, store)
             out_store[key] = index_select(value, index, dim=dim)
 

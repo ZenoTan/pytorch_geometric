@@ -299,6 +299,8 @@ class NodeStorage(BaseStorage):
     def is_node_attr(self, key: str) -> bool:
         value = self[key]
         cat_dim = self._parent().__cat_dim__(key, value, self)
+        if key.endswith('feat'):
+            return True
         if not isinstance(value, Tensor):
             return False
         if value.size(cat_dim) != self.num_nodes:
